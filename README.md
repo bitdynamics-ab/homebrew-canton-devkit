@@ -7,7 +7,8 @@ release artifacts and Homebrew formula needed to install released builds.
 
 ## Homebrew
 
-Install the latest released formula directly:
+After a public release is published and the formula is updated with real
+checksums, install the latest released formula directly:
 
 ```sh
 brew install --formula \
@@ -16,6 +17,9 @@ brew install --formula \
 
 The formula downloads platform-specific release tarballs from this repository's
 GitHub Releases page.
+
+The initial formula uses placeholder `version` and `sha256` values until the
+first public release assets are available.
 
 Supported Homebrew platforms:
 

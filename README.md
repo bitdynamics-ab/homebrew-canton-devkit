@@ -2,8 +2,9 @@
 
 The public distribution repository for canton-devkit release builds.
 
-The canton-devkit source repository is private. This repository hosts the public
-release artifacts and Homebrew formula needed to install released builds.
+This repository hosts the public release artifacts and Homebrew formula 
+needed to install released builds before we convert canton-devkit source 
+repository to public.
 
 ## Homebrew
 

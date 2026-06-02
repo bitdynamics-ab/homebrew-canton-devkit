@@ -1,4 +1,4 @@
-# canton-devkit-builds
+# homebrew-canton-devkit
 
 The public distribution repository for canton-devkit release builds.
 
@@ -9,18 +9,22 @@ repository to public.
 ## Homebrew
 
 After a public release is published and the formula is updated with real
-checksums, install the latest released formula directly:
+checksums, add the tap and install:
 
 ```sh
-brew install --formula \
-  https://raw.githubusercontent.com/bitdynamics-ab/canton-devkit-builds/main/Formula/canton-devkit.rb
+brew tap bitdynamics-ab/canton-devkit
+brew install bitdynamics-ab/canton-devkit/canton-devkit
+```
+
+To upgrade to a newer version after the formula is updated:
+
+```sh
+brew update
+brew upgrade canton-devkit
 ```
 
 The formula downloads platform-specific release tarballs from this repository's
 GitHub Releases page.
-
-The initial formula uses placeholder `version` and `sha256` values until the
-first public release assets are available.
 
 Supported Homebrew platforms:
 

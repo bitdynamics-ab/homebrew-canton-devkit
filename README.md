@@ -34,6 +34,7 @@ Each release should publish these assets:
 ```text
 canton-devkit_vX.Y.Z_darwin_arm64.tar.gz
 canton-devkit_vX.Y.Z_linux_amd64.tar.gz
+canton-devkit_windows_amd64.exe
 checksums.txt
 ```
 

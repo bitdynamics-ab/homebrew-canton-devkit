@@ -70,16 +70,25 @@ jobs:
 
       - name: Download release assets
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.meta.outputs.tag }}
         run: |
           set -euo pipefail
+          # This repo is public, so release assets are anonymously
+          # downloadable — no gh CLI or token needed. (The self-hosted
+          # runner has no gh CLI installed.) Asset names are deterministic,
+          # so curl the predictable release-download URLs directly.
           mkdir -p assets
-          gh release download "${TAG}" \
-            --repo "${{ github.repository }}" \
-            --dir assets \
-            --pattern "canton-devkit_*" \
-            --pattern "SHA256SUMS"
+          base="https://github.com/${{ github.repository }}/releases/download/${TAG}"
+          assets=(
+            "canton-devkit_${TAG}_linux_amd64.tar.gz"
+            "canton-devkit_${TAG}_darwin_arm64.tar.gz"
+            "canton-devkit_${TAG}_windows_amd64.zip"
+            "SHA256SUMS"
+          )
+          for name in "${assets[@]}"; do
+            echo "Downloading ${name}..."
+            curl -sSfL -o "assets/${name}" "${base}/${name}"
+          done
           echo "Downloaded assets:"
           ls -lh assets/
 
@@ -87,9 +96,17 @@ jobs:
         run: |
           set -euo pipefail
           cd assets
-          # SHA256SUMS uses GNU sha256sum format — verify all downloaded
-          # archives against it.
-          sha256sum --check --strict SHA256SUMS
+          # SHA256SUMS lists every release asset (incl. the .deb we don't
+          # download), so `sha256sum --check SHA256SUMS` would fail on the
+          # missing files. Scope verification to the archives we fetched by
+          # grepping their lines out of SHA256SUMS first.
+          : > checks.txt
+          for name in canton-devkit_*_linux_amd64.tar.gz \
+                      canton-devkit_*_darwin_arm64.tar.gz \
+                      canton-devkit_*_windows_amd64.zip; do
+            grep " ${name}$" SHA256SUMS >> checks.txt
+          done
+          sha256sum --check --strict checks.txt
           echo "All checksums verified."
 
       - name: Lay out per-platform component dirs
@@ -97,6 +114,12 @@ jobs:
           TAG: ${{ steps.meta.outputs.tag }}
         run: |
           set -euo pipefail
+          # The Windows asset is a .zip — require unzip up front so the
+          # failure is obvious if the self-hosted runner lacks it.
+          command -v unzip >/dev/null || {
+            echo "::error::unzip is required on the runner but was not found"
+            exit 1
+          }
           read -ra targets <<< "${RELEASE_TARGETS}"
           for target in "${targets[@]}"; do
             os="${target%/*}"

@@ -1,0 +1,192 @@
+name: Publish DPM component (OCI)
+
+# Publishes the canton-devkit DPM component to this repo's public GHCR
+# namespace. Triggered automatically when canton-devkit's release workflow
+# creates a GitHub Release here, or manually via workflow_dispatch for
+# re-runs / testing.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag to publish (e.g. v0.10.1)"
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  # GHCR namespace — resolves to this (public) repo so the OCI artifact
+  # is publicly pullable once the package visibility is set to Public.
+  GHCR_NAMESPACE: ghcr.io/${{ github.repository }}
+  # DPM CLI version pinned for reproducible publishes. Bump deliberately
+  # — see https://github.com/digital-asset/dpm/releases. Recompute the
+  # SHA via: curl -sL <release-tarball-url> | sha256sum
+  DPM_VERSION: 1.0.16
+  DPM_LINUX_SHA256: 387421d4b3d0e799f05cde1f5c2adc704acd2824796d436861602eb2be759874
+  # Build matrix — must match the platforms canton-devkit publishes.
+  RELEASE_TARGETS: linux/amd64 darwin/arm64 windows/amd64
+
+jobs:
+  publish:
+    name: Download release assets + publish DPM component
+    runs-on: [self-hosted, Linux, X64, proxmox, e2e]
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        # actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Resolve and validate version
+        id: meta
+        run: |
+          set -euo pipefail
+          if [[ -n "${{ inputs.version }}" ]]; then
+            tag="${{ inputs.version }}"
+          else
+            tag="${{ github.event.release.tag_name }}"
+          fi
+          if [[ -z "${tag}" ]]; then
+            echo "::error::Could not determine release tag" >&2
+            exit 1
+          fi
+          # Ensure v-prefix for the GitHub release tag.
+          [[ "${tag}" == v* ]] || tag="v${tag}"
+          component_version="${tag#v}"
+
+          # Reject non-full-semver tags (e.g. v0.7). DPM's publish
+          # command requires a full MAJOR.MINOR.PATCH OCI tag.
+          semver_re='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+          if [[ ! "${component_version}" =~ $semver_re ]]; then
+            echo "::error::Tag '${tag}' is not full semver (MAJOR.MINOR.PATCH). Example: v0.10.1" >&2
+            exit 1
+          fi
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "component_version=${component_version}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          gh release download "${TAG}" \
+            --repo "${{ github.repository }}" \
+            --dir assets \
+            --pattern "canton-devkit_*" \
+            --pattern "SHA256SUMS"
+          echo "Downloaded assets:"
+          ls -lh assets/
+
+      - name: Verify checksums
+        run: |
+          set -euo pipefail
+          cd assets
+          # SHA256SUMS uses GNU sha256sum format — verify all downloaded
+          # archives against it.
+          sha256sum --check --strict SHA256SUMS
+          echo "All checksums verified."
+
+      - name: Lay out per-platform component dirs
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          read -ra targets <<< "${RELEASE_TARGETS}"
+          for target in "${targets[@]}"; do
+            os="${target%/*}"
+            arch="${target#*/}"
+            dir="component/${os}_${arch}"
+            mkdir -p "${dir}/bin"
+
+            binary_name="canton-devkit"
+            [ "$os" = "windows" ] && binary_name="canton-devkit.exe"
+
+            # Extract the binary from the release archive.
+            if [ "$os" = "windows" ]; then
+              archive="assets/canton-devkit_${TAG}_${os}_${arch}.zip"
+              unzip -o "${archive}" "${binary_name}" -d "${dir}/bin/"
+            else
+              archive="assets/canton-devkit_${TAG}_${os}_${arch}.tar.gz"
+              tar -xzf "${archive}" -C "${dir}/bin/" "${binary_name}"
+            fi
+            chmod +x "${dir}/bin/${binary_name}"
+
+            # Copy LICENSE from the extracted tarball (all archives carry it).
+            if [ "$os" = "windows" ]; then
+              unzip -o "${archive}" LICENSE -d "${dir}/"
+            else
+              tar -xzf "${archive}" -C "${dir}/" LICENSE
+            fi
+
+            # Template the component manifest with the correct binary path.
+            sed "s|@@BINARY_PATH@@|bin/${binary_name}|" \
+              packaging/component.yaml.tmpl > "${dir}/component.yaml"
+          done
+          echo "Component layout:"
+          ls -R component/
+
+      - name: Install DPM CLI (sha256-verified)
+        run: |
+          set -euo pipefail
+          tar="/tmp/dpm-${DPM_VERSION}-linux-amd64.tar.gz"
+          curl -sSfL \
+            "https://github.com/digital-asset/dpm/releases/download/${DPM_VERSION}/dpm-${DPM_VERSION}-linux-amd64.tar.gz" \
+            -o "$tar"
+          echo "${DPM_LINUX_SHA256}  ${tar}" | sha256sum --check --strict -
+          bindir="${RUNNER_TEMP:-/tmp}/dpm-bin"
+          mkdir -p "$bindir"
+          tar -xzf "$tar" -C "$bindir" dpm
+          chmod 0755 "$bindir/dpm"
+          echo "$bindir" >> "$GITHUB_PATH"
+          "$bindir/dpm" --version
+
+      - name: Log in to GHCR
+        # docker/login-action@v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate component manifest (dry-run)
+        env:
+          VERSION: ${{ steps.meta.outputs.component_version }}
+        run: |
+          set -euo pipefail
+          dpm publish component \
+            "oci://${GHCR_NAMESPACE}:${VERSION}" \
+            --dry-run \
+            --platform linux/amd64=component/linux_amd64 \
+            --platform darwin/arm64=component/darwin_arm64 \
+            --platform windows/amd64=component/windows_amd64
+
+      - name: Publish DPM component
+        env:
+          VERSION: ${{ steps.meta.outputs.component_version }}
+        run: |
+          set -euo pipefail
+          # --include-git-info is intentionally omitted: this repo is the
+          # distribution surface, not the source. Git metadata recorded
+          # here would reference the distribution repo, not the canton-devkit
+          # source — which would be misleading.
+
+          # Only move the `latest` tag for FINAL releases. Pre-releases
+          # (e.g. v1.2.0-rc1) must not clobber `latest`.
+          extra_tags=()
+          case "${VERSION}" in
+            *-*) echo "pre-release ${VERSION} — leaving 'latest' untouched" ;;
+            *)   extra_tags+=(--extra-tags latest) ;;
+          esac
+
+          dpm publish component \
+            "oci://${GHCR_NAMESPACE}:${VERSION}" \
+            ${extra_tags[@]+"${extra_tags[@]}"} \
+            --platform linux/amd64=component/linux_amd64 \
+            --platform darwin/arm64=component/darwin_arm64 \
+            --platform windows/amd64=component/windows_amd64

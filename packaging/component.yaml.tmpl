@@ -1,0 +1,24 @@
+# DPM component manifest template for canton-devkit.
+#
+# Vendored from bitdynamics-ab/canton-devkit:packaging/component.yaml.tmpl.
+# Keep in sync with the upstream copy when the manifest schema changes.
+#
+# The release workflow substitutes @@BINARY_PATH@@ per platform
+# (bin/canton-devkit on Unix, bin/canton-devkit.exe on Windows) and
+# writes the final component.yaml into each per-platform component dir.
+#
+# Registers a single top-level command `localnet` that delegates the
+# rest of DevKit's CLI surface to our Go binary's own argv parser.
+#
+# DPM does NOT pass the registered command name to the binary's argv —
+# only `exec-args` + user args reach it. `exec-args: ["localnet"]` is
+# therefore required so the binary dispatches into its `localnet`
+# subtree regardless of how DPM invoked the component.
+apiVersion: digitalasset.com/v1
+kind: Component
+spec:
+  commands:
+    - name: localnet
+      path: @@BINARY_PATH@@
+      desc: "Canton DevKit: manage LocalNet, DARs, contracts, tokens, and observability"
+      exec-args: ["localnet"]

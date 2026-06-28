@@ -53,9 +53,6 @@ dpm install package
 dpm localnet --help          # confirms the component loaded
 ```
 
-The OCI artifact is published automatically as part of the Canton DevKit
-release process.
-
 ## Homebrew
 
 After a public release is published and the formula is updated with real

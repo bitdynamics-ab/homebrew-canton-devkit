@@ -130,22 +130,23 @@ jobs:
             binary_name="canton-devkit"
             [ "$os" = "windows" ] && binary_name="canton-devkit.exe"
 
-            # Extract the binary from the release archive.
+            # Extract the whole archive into a scratch dir, then relocate
+            # the files. The tar members are prefixed with "./" (./canton-devkit,
+            # ./LICENSE) while the zip members are not — extracting everything
+            # and moving by basename avoids depending on the exact member path.
+            extract="$(mktemp -d)"
             if [ "$os" = "windows" ]; then
               archive="assets/canton-devkit_${TAG}_${os}_${arch}.zip"
-              unzip -o "${archive}" "${binary_name}" -d "${dir}/bin/"
+              unzip -oq "${archive}" -d "${extract}"
             else
               archive="assets/canton-devkit_${TAG}_${os}_${arch}.tar.gz"
-              tar -xzf "${archive}" -C "${dir}/bin/" "${binary_name}"
+              tar -xzf "${archive}" -C "${extract}"
             fi
-            chmod +x "${dir}/bin/${binary_name}"
 
-            # Copy LICENSE from the extracted tarball (all archives carry it).
-            if [ "$os" = "windows" ]; then
-              unzip -o "${archive}" LICENSE -d "${dir}/"
-            else
-              tar -xzf "${archive}" -C "${dir}/" LICENSE
-            fi
+            mv "${extract}/${binary_name}" "${dir}/bin/${binary_name}"
+            chmod +x "${dir}/bin/${binary_name}"
+            mv "${extract}/LICENSE" "${dir}/LICENSE"
+            rm -rf "${extract}"
 
             # Template the component manifest with the correct binary path.
             sed "s|@@BINARY_PATH@@|bin/${binary_name}|" \

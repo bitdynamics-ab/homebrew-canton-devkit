@@ -38,14 +38,14 @@ Supported platforms:
 
 ## DPM component (OCI)
 
-Canton DevKit is also published as a native DPM component to this repo's
-GitHub Container Registry. Add it to your project's `daml.yaml` (or
+Canton DevKit is also published as a native DPM component to GitHub
+Container Registry. Add it to your project's `daml.yaml` (or
 `multi-package.yaml`) `components` list and install:
 
 ```yaml
 # daml.yaml
 components:
-  - oci://ghcr.io/bitdynamics-ab/homebrew-canton-devkit:<version>
+  - oci://ghcr.io/bitdynamics-ab/canton-devkit:<version>
 ```
 
 ```sh
@@ -53,8 +53,8 @@ dpm install package
 dpm localnet --help          # confirms the component loaded
 ```
 
-The OCI artifact is published automatically when a new GitHub Release is
-created in this repository.
+The OCI artifact is published automatically as part of the Canton DevKit
+release process.
 
 ## Homebrew
 

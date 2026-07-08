@@ -2,16 +2,16 @@ Origin: Bitdynamics
 Label: Canton DevKit
 Suite: stable
 Codename: stable
-Date: Mon, 06 Jul 2026 12:28:21 +0000
+Date: Wed, 08 Jul 2026 07:33:43 +0000
 Architectures: amd64
 Components: main
 Description: Canton DevKit APT repository
 MD5Sum:
- 86bc2558d026d445e24565c402d0fe9b             1941 main/binary-amd64/Packages
- 943a14b7777253e5f2def9be09db414e              666 main/binary-amd64/Packages.gz
+ c76f39b70414e7d06a22b6ff06a2dc95             2588 main/binary-amd64/Packages
+ b76518886d0ea775d47774aefb0405f9              779 main/binary-amd64/Packages.gz
 SHA1:
- 6a0456d48ba35b599c801e4f810bac58c29359ee             1941 main/binary-amd64/Packages
- d1ac7648f0ab09b6b6fa049b694dba0c2c4b66d7              666 main/binary-amd64/Packages.gz
+ a78b3642400130c79b3aabcaca733f260f8d3321             2588 main/binary-amd64/Packages
+ 1a5cb378d67a60b5ea05861c5dc52f585deb1e6a              779 main/binary-amd64/Packages.gz
 SHA256:
- 32abd209f294026d2ec32409e6db90dfdf8b0fe8cd11b8164297283f642648cf             1941 main/binary-amd64/Packages
- 114e734e0eaebfd082d6dfc1f0585188986eb2c10b3fcdb23b4471a2f871dd15              666 main/binary-amd64/Packages.gz
+ 167f1257b299b92e2ee933b473e6b07aa47558a25a2895a5c1134064b20ea3d2             2588 main/binary-amd64/Packages
+ 81fedb3828f1acad2c3c60df1cecbbd8cb8c10eda85133bdb87b961f86298e0e              779 main/binary-amd64/Packages.gz

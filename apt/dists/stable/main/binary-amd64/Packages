@@ -83,3 +83,20 @@ Description: Canton DevKit LocalNet developer tooling
  contract exploration, observability, and token testing from a
  single standalone CLI.
 
+Package: canton-devkit
+Version: 0.15.0
+Architecture: amd64
+Maintainer: Bitdynamics <admin@bitdynamics.me>
+Filename: pool/main/c/canton-devkit/canton-devkit_0.15.0_amd64.deb
+Size: 7331132
+MD5sum: b810e457ce89bb4c9bf9f7cbd30fc9c8
+SHA1: 4b6c097d213758892060a7cd3b441c96a0a25a44
+SHA256: 8f98f904e9131fd39fa0ba596964968182b37ec9e48a75c1a11fe0f1121ee998
+Section: devel
+Priority: optional
+Homepage: https://github.com/bitdynamics-ab/canton-devkit
+Description: Canton DevKit LocalNet developer tooling
+ Canton DevKit manages Canton LocalNet instances, DAR workflows,
+ contract exploration, observability, and token testing from a
+ single standalone CLI.
+

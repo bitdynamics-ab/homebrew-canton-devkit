@@ -2,19 +2,19 @@ class CantonDevkit < Formula
   desc "Canton DevKit: LocalNet, DAR, contracts, and observability tooling"
   homepage "https://github.com/bitdynamics-ab/canton-devkit"
   license "Apache-2.0"
-  version "0.16.1"
+  version "0.16.2"
 
   on_macos do
     on_arm do
       url "https://github.com/bitdynamics-ab/canton-devkit/releases/download/v#{version}/canton-devkit_v#{version}_darwin_arm64.tar.gz"
-      sha256 "4478b5fe0853490408e38a87f9450bbaec3535066f2de4fa516b1ce0ad0738f1"
+      sha256 "dd050a95040e62f62219554aceaa502477357463aa483ebb177ec1db00db5558"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/bitdynamics-ab/canton-devkit/releases/download/v#{version}/canton-devkit_v#{version}_linux_amd64.tar.gz"
-      sha256 "d8c37b36f3b367a7c383b0c258a2df753ba77d6855c0cd7ac8efda5789649f30"
+      sha256 "da32cfa9b949b2eacfad24bdc61db016ac7ee406f9afba14137398a8ec23d59d"
     end
   end
 

@@ -1,35 +1,45 @@
 # homebrew-canton-devkit
 
-The public distribution repository for canton-devkit release builds.
+> **GitHub Releases in this repository are deprecated.** Download release
+> binaries from
+> [bitdynamics-ab/canton-devkit/releases](https://github.com/bitdynamics-ab/canton-devkit/releases).
+> See the main project at
+> [bitdynamics-ab/canton-devkit](https://github.com/bitdynamics-ab/canton-devkit)
+> and the
+> [installation guide](https://bitdynamics-ab.github.io/canton-devkit/getting-started/).
 
-This repository hosts the public release artifacts and Homebrew formula 
-needed to install released builds before we convert canton-devkit source 
-repository to public.
+This repository is the Homebrew tap for canton-devkit. It also hosts related
+packaging metadata (such as APT). Release binaries are no longer published
+here — use [canton-devkit](https://github.com/bitdynamics-ab/canton-devkit)
+instead.
 
 ## Quick Install
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/bitdynamics-ab/homebrew-canton-devkit/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/bitdynamics-ab/canton-devkit/main/install.sh | sh
 ```
 
 Or with `wget`:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/bitdynamics-ab/homebrew-canton-devkit/main/install.sh | sh
+wget -qO- https://raw.githubusercontent.com/bitdynamics-ab/canton-devkit/main/install.sh | sh
 ```
 
 Options (pass as environment variables):
 
 ```sh
 # Pin a specific version
-curl -fsSL https://raw.githubusercontent.com/bitdynamics-ab/homebrew-canton-devkit/main/install.sh | VERSION=0.4 sh
+curl -fsSL https://raw.githubusercontent.com/bitdynamics-ab/canton-devkit/main/install.sh | VERSION=0.4 sh
 
 # Custom install directory
-curl -fsSL https://raw.githubusercontent.com/bitdynamics-ab/homebrew-canton-devkit/main/install.sh | INSTALL_DIR=/usr/local/bin sh
+curl -fsSL https://raw.githubusercontent.com/bitdynamics-ab/canton-devkit/main/install.sh | INSTALL_DIR=/usr/local/bin sh
 ```
 
 The installer downloads the correct binary for your platform, verifies
 the SHA-256 checksum, and installs to `~/.local/bin` by default.
+
+> **Note:** The [install.sh](install.sh) in this repository is legacy and
+> should not be used. Use the canton-devkit install script above instead.
 
 Supported platforms:
 
@@ -53,10 +63,12 @@ dpm install package
 dpm localnet --help          # confirms the component loaded
 ```
 
+For full DPM install steps, see the
+[getting started guide](https://bitdynamics-ab.github.io/canton-devkit/getting-started/).
+
 ## Homebrew
 
-After a public release is published and the formula is updated with real
-checksums, add the tap and install:
+Add the tap and install:
 
 ```sh
 brew tap bitdynamics-ab/canton-devkit
@@ -70,32 +82,12 @@ brew update
 brew upgrade canton-devkit
 ```
 
-The formula downloads platform-specific release tarballs from this repository's
-GitHub Releases page.
+The formula downloads platform-specific release tarballs from
+[canton-devkit releases](https://github.com/bitdynamics-ab/canton-devkit/releases).
+See also the upstream
+[Homebrew documentation](https://github.com/bitdynamics-ab/canton-devkit/blob/main/docs/homebrew.md).
 
 Supported Homebrew platforms:
 
 - macOS Apple Silicon (`darwin/arm64`)
 - Linux x86_64 (`linux/amd64`)
-
-## Release Assets
-
-Each release should publish these assets:
-
-```text
-canton-devkit_vX.Y.Z_darwin_arm64.tar.gz
-canton-devkit_vX.Y.Z_linux_amd64.tar.gz
-canton-devkit_windows_amd64.exe
-checksums.txt
-```
-
-Each tarball must contain:
-
-```text
-canton-devkit
-LICENSE
-README.md
-```
-
-The Homebrew formula's `version` and `sha256` fields are updated after release
-assets are published.
